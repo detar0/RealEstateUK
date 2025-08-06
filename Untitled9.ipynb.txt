@@ -1,0 +1,90 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 0,
+  "metadata": {
+    "colab": {
+      "provenance": []
+    },
+    "kernelspec": {
+      "name": "python3",
+      "display_name": "Python 3"
+    },
+    "language_info": {
+      "name": "python"
+    }
+  },
+  "cells": [
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {
+        "id": "iWqPXIINp7f-"
+      },
+      "outputs": [],
+      "source": [
+        "import pandas as pd\n",
+        "import matplotlib.pyplot as plt\n",
+        "import seaborn as sns\n",
+        "\n",
+        "df=pd.read_csv(\"/content/Average-price-seasonally-adjusted-2022-08.csv\")\n",
+        "print(df)\n",
+        "\n",
+        "# Checking For NAN\n",
+        "print(df.isnull().sum())\n",
+        "\n",
+        "# Checking unique values\n",
+        "print(df[\"Region_Name\"].unique())\n",
+        "\n",
+        "# Converting to numeric\n",
+        "print(df.shape)\n",
+        "df[\"Average_Price_SA\"]=pd.to_numeric(df[\"Average_Price_SA\"],errors=\"raise\" )\n",
+        "print(df.shape)\n",
+        "\n",
+        "# Converting to datetime\n",
+        "df[\"Date\"]=pd.to_datetime(df[\"Date\"], format=\"%Y-%m-%d\")\n",
+        "df[\"Year\"]=df[\"Date\"].dt.year\n",
+        "\n",
+        "# Filtering Years\n",
+        "yrs=df[(df[\"Year\"]>=2003) & (df[\"Year\"]<=2021)]\n",
+        "\n",
+        "# Choosing top 10 largest regions\n",
+        "top_10_regions=(\n",
+        "    yrs.groupby(\"Region_Name\")[\"Average_Price_SA\"]\n",
+        "        .mean()\n",
+        "            .nlargest(10)\n",
+        "                .index\n",
+        "                )\n",
+        "                df_top = yrs[yrs[\"Region_Name\"].isin(top_10_regions)]\n",
+        "                print(df_top)\n",
+        "\n",
+        "                # Creating a pivot\n",
+        "                df_pivot=df_top.pivot_table(\n",
+        "                    index=\"Year\",\n",
+        "                        columns=\"Region_Name\",\n",
+        "                            values=\"Average_Price_SA\",\n",
+        "                                aggfunc=\"mean\"\n",
+        "                                )\n",
+        "                                sns.set_palette(\"deep\")\n",
+        "\n",
+        "                                plt.figure(figsize=(12,8))\n",
+        "\n",
+        "                                # Final stage: creating the heatmap\n",
+        "                                sns.heatmap(\n",
+        "                                    df_pivot,\n",
+        "                                        annot=True,\n",
+        "                                            fmt=\".0f\",\n",
+        "                                                cmap=\"coolwarm\",\n",
+        "                                                    cbar_kws={\"label\": \"Average Price (£)\"},\n",
+        "                                                        linewidths=0.5\n",
+        "                                                        )\n",
+        "                                                        plt.title(\"🇬🇧 Heatmap: UK 10 largest regions Sales (2003-2021).\")\n",
+        "                                                        plt.ylabel(\"Sales\")\n",
+        "                                                        plt.xlabel(\"Region\")\n",
+        "                                                        plt.xticks(rotation=45)\n",
+        "                                                        plt.yticks(rotation=0)\n",
+        "                                                        plt.tight_layout()\n",
+        "                                                        plt.show()"
+      ]
+    }
+  ]
+}
